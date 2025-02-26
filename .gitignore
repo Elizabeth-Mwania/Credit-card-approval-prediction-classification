@@ -1,6 +1,2 @@
-.Credit_approval_env/
-.DS_Store
-.ipynb_checkpoints/
-.streamlit/secrets.toml
 README.md
-assets
+assets/
