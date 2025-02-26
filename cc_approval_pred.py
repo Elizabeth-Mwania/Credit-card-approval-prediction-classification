@@ -631,3 +631,6 @@ if predict_bt:
         st.error(
             "Unable to make a prediction due to an error. Please check the logs and try again."
         )
+
+
+# run this file by running streamlit run .py
