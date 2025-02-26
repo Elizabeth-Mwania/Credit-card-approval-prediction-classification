@@ -565,46 +565,55 @@ logger = logging.getLogger(__name__)
 
 
 def make_prediction():
-    bucket_name = "creditapplipred"
-    key = "gradient_boosting_model.sav"
-
-    client = boto3.client(
-        "s3",
-        aws_access_key_id=st.secrets["access_key"],
-        aws_secret_access_key=st.secrets["secret_access_key"],
-    )
-
+    # Make prediction
+    model_path = "saved_models/gradient_boosting/gradient_boosting_model.sav"
     try:
-        # Test S3 access
-        logger.info(f"Attempting to list objects in {bucket_name}")
-        response = client.list_objects_v2(Bucket=bucket_name, MaxKeys=1)
-        logger.info("Successfully listed bucket contents")
-
-        logger.info(f"Attempting to download {key} from {bucket_name}")
-        with tempfile.TemporaryFile() as fp:
-            client.download_fileobj(Fileobj=fp, Bucket=bucket_name, Key=key)
-            logger.info("Successfully downloaded the file")
-            fp.seek(0)
-            model = joblib.load(fp)
-            logger.info("Successfully loaded the model")
-
+        model = joblib.load(model_path)
         return model.predict(profile_to_pred_prep)
-    except ClientError as e:
-        error_code = e.response["Error"]["Code"]
-        error_message = e.response["Error"]["Message"]
-        logger.error(f"ClientError: {error_code} - {error_message}")
-        st.error(f"AWS Error: {error_code} - {error_message}")
-        if error_code == "AccessDenied":
-            st.error("Access Denied. Please check your AWS permissions.")
-        elif error_code == "NoSuchBucket":
-            st.error(f"The bucket {bucket_name} does not exist.")
-        elif error_code == "NoSuchKey":
-            st.error(f"The key {key} does not exist in the bucket.")
-        return None
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
-        st.error(f"An unexpected error occurred: {str(e)}")
+        st.error(f"Failed to load the model: {str(e)}")
         return None
+    
+    # bucket_name = "creditapplipred"
+    # key = "gradient_boosting_model.sav"
+
+    # client = boto3.client(
+    #     "s3",
+    #     aws_access_key_id=st.secrets["access_key"],
+    #     aws_secret_access_key=st.secrets["secret_access_key"],
+    # )
+
+    # try:
+    #     # Test S3 access
+    #     logger.info(f"Attempting to list objects in {bucket_name}")
+    #     response = client.list_objects_v2(Bucket=bucket_name, MaxKeys=1)
+    #     logger.info("Successfully listed bucket contents")
+
+    #     logger.info(f"Attempting to download {key} from {bucket_name}")
+    #     with tempfile.TemporaryFile() as fp:
+    #         client.download_fileobj(Fileobj=fp, Bucket=bucket_name, Key=key)
+    #         logger.info("Successfully downloaded the file")
+    #         fp.seek(0)
+    #         model = joblib.load(fp)
+    #         logger.info("Successfully loaded the model")
+
+    #     return model.predict(profile_to_pred_prep)
+    # except ClientError as e:
+    #     error_code = e.response["Error"]["Code"]
+    #     error_message = e.response["Error"]["Message"]
+    #     logger.error(f"ClientError: {error_code} - {error_message}")
+    #     st.error(f"AWS Error: {error_code} - {error_message}")
+    #     if error_code == "AccessDenied":
+    #         st.error("Access Denied. Please check your AWS permissions.")
+    #     elif error_code == "NoSuchBucket":
+    #         st.error(f"The bucket {bucket_name} does not exist.")
+    #     elif error_code == "NoSuchKey":
+    #         st.error(f"The key {key} does not exist in the bucket.")
+    #     return None
+    # except Exception as e:
+    #     logger.error(f"Unexpected error: {str(e)}")
+    #     st.error(f"An unexpected error occurred: {str(e)}")
+    #     return None
 
 
 if predict_bt:
